@@ -265,15 +265,20 @@
           const extensions = ['.png', '.jpg']; 
           let posiblesRutas = [];
 
-          // 1. Intentar el nombre estándar (sin '2')
-          for (const ext of extensions) {
-              posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${valorBase}_of_${paloSymbol}${ext}`);
-          }
-          
-          // 2. Si es una carta de figura o un As, intentar también el nombre con '2'
-          if (cardsWithOptional2.includes(valorCorto)) { 
+          // Si es una carta que *puede* tener una versión con '2' (As, Jota, Reina, Rey)
+          if (cardsWithOptional2.includes(valorCorto)) {
+              // Intentar la versión '2' primero
               for (const ext of extensions) {
                   posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${valorBase}_of_${paloSymbol}2${ext}`);
+              }
+              // Luego intentar la versión estándar como respaldo
+              for (const ext of extensions) {
+                  posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${valorBase}_of_${paloSymbol}${ext}`);
+              }
+          } else {
+              // Para todas las demás cartas, solo existe la versión estándar
+              for (const ext of extensions) {
+                  posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${valorBase}_of_${paloSymbol}${ext}`);
               }
           }
           
@@ -617,3 +622,4 @@
   </script>
 </body>
 </html>
+
