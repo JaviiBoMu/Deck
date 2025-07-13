@@ -248,8 +248,8 @@
           'Q': 'queen', 
           'K': 'king'
       };
-      // Solo las cartas de figura (J, Q, K) pueden tener una versión con '2'
-      const faceCardsWithOptional2 = ['J', 'Q', 'K']; 
+      // Cartas que pueden tener una versión con '2' (As, Jota, Reina, Rey)
+      const cardsWithOptional2 = ['A', 'J', 'Q', 'K']; 
 
       // URL directa de la imagen del reverso
       const REVERSE_IMAGE_URL = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/u-100r_1024x1024%20%282%29-6DS20QsP0L5F1NfJuntzLK9a3EfgHV.png'; 
@@ -266,8 +266,8 @@
               posiblesRutas.push(`/cards/${valorBase}_of_${paloSymbol}${ext}`);
           }
           
-          // 2. Si es una carta de figura (J, Q, K), intentar también el nombre con '2'
-          if (faceCardsWithOptional2.includes(valorCorto)) {
+          // 2. Si es una carta de figura o un As, intentar también el nombre con '2'
+          if (cardsWithOptional2.includes(valorCorto)) { 
               for (const ext of extensions) {
                   posiblesRutas.push(`/cards/${valorBase}_of_${paloSymbol}2${ext}`);
               }
