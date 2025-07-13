@@ -379,11 +379,7 @@
 
           // Cargar la imagen del reverso inicialmente
           modalCardImage.src = carta.imagenReverso;
-          modalCardImage.onerror = () => {
-              console.error('Error al cargar la imagen del reverso:', carta.imagenReverso);
-              modalCardImage.src = '/placeholder.svg?height=280&width=200'; // Fallback a placeholder
-              modalCardImage.onerror = null; // Evitar bucle infinito
-          };
+          // Eliminado: modalCardImage.onerror para el reverso, ya que la URL es directa y estable.
 
           modal.style.display = 'block';
           document.body.style.overflow = 'hidden';
@@ -466,11 +462,7 @@
               createConfetti(); // El confeti se llama siempre que se voltea a la cara frontal
           } else {
               modalCardImage.src = cartaActualModal.imagenReverso;
-              modalCardImage.onerror = () => {
-                  console.error('Error al cargar la imagen del reverso:', cartaActualModal.imagenReverso);
-                  modalCardImage.src = '/placeholder.svg?height=280&width=200'; // Fallback a placeholder
-                  modalCardImage.onerror = null; // Evitar bucle infinito
-              };
+              // Eliminado: modalCardImage.onerror para el reverso
           }
       }
 
