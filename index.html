@@ -254,6 +254,10 @@
       // URL directa de la imagen del reverso
       const REVERSE_IMAGE_URL = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/u-100r_1024x1024%20%282%29-6DS20QsP0L5F1NfJuntzLK9a3EfgHV.png'; 
 
+      // Define la base de la URL para los assets de GitHub Pages
+      // Esto debe coincidir con el nombre de tu repositorio si está en una subcarpeta
+      const GITHUB_PAGES_BASE_PATH = '/Deck'; 
+
       // Función para obtener las rutas posibles de la imagen de una carta PNG
       // Devuelve un array de URLs, en orden de preferencia
       function obtenerRutasPosiblesImagen(valorCorto, paloSymbol) {
@@ -263,13 +267,13 @@
 
           // 1. Intentar el nombre estándar (sin '2')
           for (const ext of extensions) {
-              posiblesRutas.push(`/cards/${valorBase}_of_${paloSymbol}${ext}`);
+              posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${valorBase}_of_${paloSymbol}${ext}`);
           }
           
           // 2. Si es una carta de figura o un As, intentar también el nombre con '2'
           if (cardsWithOptional2.includes(valorCorto)) { 
               for (const ext of extensions) {
-                  posiblesRutas.push(`/cards/${valorBase}_of_${paloSymbol}2${ext}`);
+                  posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${valorBase}_of_${paloSymbol}2${ext}`);
               }
           }
           
@@ -284,14 +288,14 @@
 
           // 1. Intentar el nombre estándar (sin '2')
           for (const ext of extensions) {
-              posiblesRutas.push(`/cards/${color}_joker${ext}`);
-              posiblesRutas.push(`/cards/joker_${color}${ext}`); // Opción alternativa de nombre
+              posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${color}_joker${ext}`);
+              posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/joker_${color}${ext}`); // Opción alternativa de nombre
           }
 
           // 2. Intentar el nombre con '2'
           for (const ext of extensions) {
-              posiblesRutas.push(`/cards/${color}_joker2${ext}`);
-              posiblesRutas.push(`/cards/joker_${color}2${ext}`); // Opción alternativa de nombre
+              posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/${color}_joker2${ext}`);
+              posiblesRutas.push(`${GITHUB_PAGES_BASE_PATH}/cards/joker_${color}2${ext}`); // Opción alternativa de nombre
           }
           
           return posiblesRutas;
