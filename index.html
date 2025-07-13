@@ -301,6 +301,15 @@
           return posiblesRutas;
       }
 
+    // Generar un SVG de respaldo genérico como Data URI
+    function generarPlaceholderSVG(width, height) {
+        const svgContent = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+            <rect width="${width}" height="${height}" fill="#ccc" stroke="#999" stroke-width="2" rx="10"/>
+            <text x="${width / 2}" y="${height / 2}" font-family="Arial, sans-serif" font-size="24" fill="#666" text-anchor="middle" alignment-baseline="middle">No Image</text>
+        </svg>`;
+        return 'data:image/svg+xml,' + encodeURIComponent(svgContent);
+    }
+
       // Generar imagen SVG de respaldo (solo si la imagen PNG no carga)
       function generarImagenRespaldo(valor, paloInfo) {
           const colorHex = paloInfo.color === 'red' ? '#dc2626' : '#000000';
@@ -479,7 +488,7 @@
           modalCardImage.src = carta.imagenReverso;
           modalCardImage.onerror = () => {
               console.error('Error al cargar la imagen del reverso:', carta.imagenReverso);
-              modalCardImage.src = '/placeholder.svg?height=280&width=200'; // Fallback a placeholder genérico
+              modalCardImage.src = generarPlaceholderSVG(200, 280); // Usa la nueva función
               modalCardImage.onerror = null; 
           };
 
