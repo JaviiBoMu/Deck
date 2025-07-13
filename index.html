@@ -250,57 +250,54 @@
       // URL directa de la imagen del reverso
       const REVERSE_IMAGE_URL = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/u-100r_1024x1024%20%282%29-6DS20QsP0L5F1NfJuntzLK9a3EfgHV.png'; 
 
-      // Función para obtener la ruta de la imagen de una carta PNG
-      async function obtenerRutaImagen(valorCorto, paloSymbol) {
+      // Función para obtener las rutas posibles de la imagen de una carta PNG
+      // Devuelve un array de URLs, en orden de preferencia
+      function obtenerRutasPosiblesImagen(valorCorto, paloSymbol) {
           const valorLargo = valoresEnIngles[valorCorto];
-          const extensions = ['.png', '.jpg']; // Considerar ambos formatos
-          let posiblesNombres = [];
+          const extensions = ['.png', '.jpg']; 
+          let posiblesRutas = [];
 
-          // Priorizar versiones '2' para cartas especiales (si existen)
-          if (specialCards.includes(valorCorto)) {
-              posiblesNombres.push(`${valorLargo}_of_${paloSymbol}2`); // Formato largo + 2
-              posiblesNombres.push(`${valorCorto}_of_${paloSymbol}2`); // Formato corto + 2
+          // 1. Intentar el nombre estándar (sin '2')
+          for (const ext of extensions) {
+              posiblesRutas.push(`/cards/${valorLargo}_of_${paloSymbol}${ext}`);
+              posiblesRutas.push(`/cards/${valorCorto}_of_${paloSymbol}${ext}`);
           }
-
-          // Luego, las versiones estándar
-          posiblesNombres.push(`${valorLargo}_of_${paloSymbol}`);
-          posiblesNombres.push(`${valorCorto}_of_${paloSymbol}`);
           
-          // Construir la ruta absoluta con el primer nombre posible y una extensión
-          for (const nombre of posiblesNombres) {
+          // 2. Si es una carta especial, intentar también el nombre con '2'
+          if (specialCards.includes(valorCorto)) {
               for (const ext of extensions) {
-                  return `/cards/${nombre}${ext}`; // Ruta absoluta desde public/
+                  posiblesRutas.push(`/cards/${valorLargo}_of_${paloSymbol}2${ext}`);
+                  posiblesRutas.push(`/cards/${valorCorto}_of_${paloSymbol}2${ext}`);
               }
           }
-          return null; // No debería llegar aquí si las rutas están bien definidas
+          
+          return posiblesRutas;
       }
 
-      // Función para obtener la ruta de la imagen del joker PNG
-      async function obtenerRutaJoker(color) {
+      // Función para obtener las rutas posibles de la imagen del joker PNG
+      // Devuelve un array de URLs, en orden de preferencia
+      function obtenerRutasPosiblesJoker(color) {
           const extensions = ['.png', '.jpg'];
-          let posiblesNombres = [];
+          let posiblesRutas = [];
 
-          // Priorizar versiones '2' para jokers (si existen)
-          posiblesNombres.push(`${color}_joker2`); // Formato color_joker2
-          posiblesNombres.push(`joker_${color}2`);  // Formato joker_color2
-
-          // Luego, las versiones estándar
-          posiblesNombres.push(`${color}_joker`);
-          posiblesNombres.push(`joker_${color}`);
-          
-          // Construir la ruta absoluta con el primer nombre posible y una extensión
-          for (const nombre of posiblesNombres) {
-              for (const ext of extensions) {
-                  return `/cards/${nombre}${ext}`; // Ruta absoluta desde public/
-              }
+          // 1. Intentar el nombre estándar (sin '2')
+          for (const ext of extensions) {
+              posiblesRutas.push(`/cards/${color}_joker${ext}`);
+              posiblesRutas.push(`/cards/joker_${color}${ext}`);
           }
-          return null;
+
+          // 2. Intentar el nombre con '2'
+          for (const ext of extensions) {
+              posiblesRutas.push(`/cards/${color}_joker2${ext}`);
+              posiblesRutas.push(`/cards/joker_${color}2${ext}`);
+          }
+          
+          return posiblesRutas;
       }
 
       // Generar imagen SVG de respaldo (solo si la imagen PNG no carga)
       function generarImagenRespaldo(valor, paloInfo) {
           const colorHex = paloInfo.color === 'red' ? '#dc2626' : '#000000';
-          const paloTexto = paloInfo.nombre.toUpperCase();
           const displaySymbol = paloInfo.displaySymbol; 
 
           const svgContent = `<svg width="200" height="280" xmlns="http://www.w3.org/2000/svg">
@@ -330,6 +327,29 @@
           return 'data:image/svg+xml,' + encodeURIComponent(svgContent);
       }
 
+      // Función para intentar cargar una imagen desde un array de URLs
+      // y usar un fallback si ninguna carga
+      function loadImageWithFallback(imgElement, urls, fallbackSrc) {
+          let currentUrlIndex = 0;
+
+          function tryNextUrl() {
+              if (currentUrlIndex < urls.length) {
+                  imgElement.src = urls[currentUrlIndex];
+                  imgElement.onerror = () => {
+                      console.warn(`Failed to load: ${urls[currentUrlIndex]}. Trying next...`);
+                      currentUrlIndex++;
+                      tryNextUrl();
+                  };
+              } else {
+                  // Si todas las URLs fallaron, usar el fallback final
+                  console.error('All image URLs failed. Using fallback.');
+                  imgElement.src = fallbackSrc;
+                  imgElement.onerror = null; // Evitar bucle infinito
+              }
+          }
+          tryNextUrl();
+      }
+
       // Generar todas las cartas
       async function generarCartas() {
           console.log('Generando cartas...');
@@ -338,7 +358,7 @@
           // Generar cartas normales
           for (const palo of palos) {
               for (const valor of valores) {
-                  const rutaImagen = await obtenerRutaImagen(valor.valor, palo.symbol);
+                  const rutasPosibles = obtenerRutasPosiblesImagen(valor.valor, palo.symbol);
                   
                   const carta = {
                       nombre: `${valor.nombre} de ${palo.nombre}`,
@@ -346,7 +366,7 @@
                       valor: valor.valor,
                       color: palo.color,
                       symbol: palo.symbol,
-                      imagenFrente: rutaImagen, // Se espera que sea una ruta a un PNG
+                      imagenFrenteRutas: rutasPosibles, // Ahora es un array de rutas
                       imagenReverso: REVERSE_IMAGE_URL 
                   };
                   todasLasCartas.push(carta);
@@ -354,8 +374,8 @@
           }
 
           // Agregar jokers
-          const rutaJokerRojo = await obtenerRutaJoker('red');
-          const rutaJokerNegro = await obtenerRutaJoker('black');
+          const rutasJokerRojo = obtenerRutasPosiblesJoker('red');
+          const rutasJokerNegro = obtenerRutasPosiblesJoker('black');
           
           const jokerRojo = {
               nombre: "Joker rojo",
@@ -363,7 +383,7 @@
               valor: "JOKER",
               color: "red",
               symbol: "JOKER",
-              imagenFrente: rutaJokerRojo, // Se espera que sea una ruta a un PNG
+              imagenFrenteRutas: rutasJokerRojo, // Ahora es un array de rutas
               imagenReverso: REVERSE_IMAGE_URL 
           };
 
@@ -373,7 +393,7 @@
               valor: "JOKER",
               color: "black",
               symbol: "JOKER",
-              imagenFrente: rutaJokerNegro, // Se espera que sea una ruta a un PNG
+              imagenFrenteRutas: rutasJokerNegro, // Ahora es un array de rutas
               imagenReverso: REVERSE_IMAGE_URL 
           };
 
@@ -393,14 +413,26 @@
               return;
           }
 
-          cartasFiltradas.forEach((carta, index) => {
+          cartasFiltradas.forEach((carta) => {
               const cardElement = document.createElement('div');
               cardElement.className = 'card-item';
-              cardElement.innerHTML = `
-                  <img class="card-image" src="${carta.imagenFrente}" alt="${carta.nombre}" 
-                       onerror="this.onerror=null;this.src='${generarImagenRespaldo(carta.valor, palos.find(p => p.symbol === carta.symbol) || {nombre: 'desconocido', color: 'black', displaySymbol: '?'})}';">
-                  <div class="card-name">${carta.nombre}</div>
-              `;
+              const imgElement = document.createElement('img');
+              imgElement.className = 'card-image';
+              imgElement.alt = carta.nombre;
+              
+              // Cargar la imagen del frente usando la nueva función de fallback
+              loadImageWithFallback(
+                  imgElement, 
+                  carta.imagenFrenteRutas, 
+                  generarImagenRespaldo(carta.valor, palos.find(p => p.symbol === carta.symbol) || {nombre: 'desconocido', color: 'black', displaySymbol: '?'})
+              );
+
+              const cardNameElement = document.createElement('div');
+              cardNameElement.className = 'card-name';
+              cardNameElement.textContent = carta.nombre;
+
+              cardElement.appendChild(imgElement);
+              cardElement.appendChild(cardNameElement);
 
               cardElement.addEventListener('click', () => abrirModal(carta));
               cardsContainer.appendChild(cardElement);
@@ -439,11 +471,10 @@
 
           // Cargar la imagen del reverso inicialmente
           modalCardImage.src = carta.imagenReverso;
-          // Añadido: onerror para el reverso, por si la URL directa falla (aunque es poco probable)
           modalCardImage.onerror = () => {
               console.error('Error al cargar la imagen del reverso:', carta.imagenReverso);
               modalCardImage.src = '/placeholder.svg?height=280&width=200'; // Fallback a placeholder genérico
-              modalCardImage.onerror = null; // Evitar bucle infinito
+              modalCardImage.onerror = null; 
           };
 
           modal.style.display = 'block';
@@ -516,14 +547,12 @@
           cartaVolteada = !cartaVolteada;
 
           if (cartaVolteada) {
-              modalCardImage.src = cartaActualModal.imagenFrente;
-              // Añadido: onerror para la imagen del frente, para que use el SVG de respaldo si el PNG no carga
-              modalCardImage.onerror = () => {
-                  console.error('Error al cargar la imagen del frente:', cartaActualModal.imagenFrente);
-                  // Generar SVG de respaldo para la carta actual
-                  modalCardImage.src = generarImagenRespaldo(cartaActualModal.valor, palos.find(p => p.symbol === cartaActualModal.symbol) || {nombre: 'desconocido', color: 'black', displaySymbol: '?'}); 
-                  modalCardImage.onerror = null; 
-              };
+              // Cargar la imagen del frente usando la nueva función de fallback
+              loadImageWithFallback(
+                  modalCardImage, 
+                  cartaActualModal.imagenFrenteRutas, 
+                  generarImagenRespaldo(cartaActualModal.valor, palos.find(p => p.symbol === cartaActualModal.symbol) || {nombre: 'desconocido', color: 'black', displaySymbol: '?'})
+              );
               createConfetti(); // El confeti se llama siempre que se voltea a la cara frontal
           } else {
               modalCardImage.src = cartaActualModal.imagenReverso;
