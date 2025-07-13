@@ -240,12 +240,16 @@
       const closeModalBtn = document.getElementById('closeModal');
       const modalCardImage = document.getElementById('modalCardImage');
 
-      // Mapeo de valores a nombres en inglés (largos y cortos) para nombres de archivo
+      // Mapeo de valores a nombres en inglés (largos) para nombres de archivo
       const valoresEnIngles = {
-          'A': 'ace', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10',
-          'J': 'jack', 'Q': 'queen', 'K': 'king'
+          'A': 'ace', 
+          '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', '10': '10',
+          'J': 'jack', 
+          'Q': 'queen', 
+          'K': 'king'
       };
-      const specialCards = ['A', 'J', 'Q', 'K']; // Valores cortos de cartas especiales
+      // Solo las cartas de figura (J, Q, K) pueden tener una versión con '2'
+      const faceCardsWithOptional2 = ['J', 'Q', 'K']; 
 
       // URL directa de la imagen del reverso
       const REVERSE_IMAGE_URL = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/u-100r_1024x1024%20%282%29-6DS20QsP0L5F1NfJuntzLK9a3EfgHV.png'; 
@@ -253,21 +257,19 @@
       // Función para obtener las rutas posibles de la imagen de una carta PNG
       // Devuelve un array de URLs, en orden de preferencia
       function obtenerRutasPosiblesImagen(valorCorto, paloSymbol) {
-          const valorLargo = valoresEnIngles[valorCorto];
+          const valorBase = valoresEnIngles[valorCorto]; // Siempre el nombre completo o el número
           const extensions = ['.png', '.jpg']; 
           let posiblesRutas = [];
 
           // 1. Intentar el nombre estándar (sin '2')
           for (const ext of extensions) {
-              posiblesRutas.push(`/cards/${valorLargo}_of_${paloSymbol}${ext}`);
-              posiblesRutas.push(`/cards/${valorCorto}_of_${paloSymbol}${ext}`);
+              posiblesRutas.push(`/cards/${valorBase}_of_${paloSymbol}${ext}`);
           }
           
-          // 2. Si es una carta especial, intentar también el nombre con '2'
-          if (specialCards.includes(valorCorto)) {
+          // 2. Si es una carta de figura (J, Q, K), intentar también el nombre con '2'
+          if (faceCardsWithOptional2.includes(valorCorto)) {
               for (const ext of extensions) {
-                  posiblesRutas.push(`/cards/${valorLargo}_of_${paloSymbol}2${ext}`);
-                  posiblesRutas.push(`/cards/${valorCorto}_of_${paloSymbol}2${ext}`);
+                  posiblesRutas.push(`/cards/${valorBase}_of_${paloSymbol}2${ext}`);
               }
           }
           
@@ -283,13 +285,13 @@
           // 1. Intentar el nombre estándar (sin '2')
           for (const ext of extensions) {
               posiblesRutas.push(`/cards/${color}_joker${ext}`);
-              posiblesRutas.push(`/cards/joker_${color}${ext}`);
+              posiblesRutas.push(`/cards/joker_${color}${ext}`); // Opción alternativa de nombre
           }
 
           // 2. Intentar el nombre con '2'
           for (const ext of extensions) {
               posiblesRutas.push(`/cards/${color}_joker2${ext}`);
-              posiblesRutas.push(`/cards/joker_${color}2${ext}`);
+              posiblesRutas.push(`/cards/joker_${color}2${ext}`); // Opción alternativa de nombre
           }
           
           return posiblesRutas;
